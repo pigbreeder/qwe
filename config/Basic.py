@@ -1,0 +1,2 @@
+Pb_DL_EPOCH = 100
+Pb_DL_BATCH_SIZE = 64
