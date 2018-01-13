@@ -1,4 +1,8 @@
 import numpy as np
+
+
+def default_func(A):
+    return 1
 class BasicNN(object):
     """ Basic Neural Network
 
@@ -8,7 +12,7 @@ class BasicNN(object):
         self.input_size = input_size
         self.W = np.random.rand(input_size, node_size)
         self.b = np.random.rand(1,node_size)
-    def set_param(self,input_size):
+    def set_input_size(self,input_size):
         self.W = np.random.rand(input_size, self.node_size)
         self.input_size = input_size
     def forward(self, input_data):
@@ -17,9 +21,7 @@ class BasicNN(object):
         self.data_forward = np.add(np.dot(input_data,self.W), self.b)
         return self.data_forward
 
-    def default_func(self, A):
-        return 1
-    def backword(self, dZ, pre_W,func=default_func):
+    def backward(self, dZ, pre_W, func=default_func):
         """ dZ.shape=sample,node_size
         pre_W.shape = node_size,back_layer_size
 
@@ -30,18 +32,21 @@ class BasicNN(object):
         m = dZ.shape[0]
         input_size, node_size = self.W.shape
         _, back_size = pre_W.shape
-        grad_b = np.zeros((m,dZ.shape[1]))
-        grad_W = np.zeros((m,input_size, node_size))
+        grad_b = np.zeros((m, node_size))
+        grad_W = np.zeros((m, input_size, node_size))
+        dX = np.zeros((m, input_size))
         for i in range(m):
             for j in range(node_size):
                 for k in range(back_size):
-                    tmp = dZ[i,j] * pre_W[j,k] * func(self, self.data_forward[i,j])
+                    tmp = dZ[i,j] * pre_W[j,k] * func(self.data_forward[i,j])
                     grad_b[i,j] += tmp
                     grad_W[i,:,j] += tmp * self.pre_data[i]
-
+                    # print('tmp:',tmp,self.W[:,j])
+                    # print('dX:',dX[i])
+                    dX[i] += self.W[:,j] * tmp
         assert grad_W.shape[1:] == (self.input_size,self.node_size)
-        assert grad_b.shape[1] == 3
-        return grad_W, grad_b
+        assert grad_b.shape[1] == self.node_size
+        return grad_W, grad_b, dX
 
 if __name__ == '__main__':
     nn = BasicNN(3,4)
@@ -55,7 +60,8 @@ if __name__ == '__main__':
     pre_W = np.random.rand(3,1)
     print('dZ:',dZ)
     print('pre_W:',pre_W)
-    back =nn.backword(dZ,pre_W)
+    back =nn.backward(dZ,pre_W)
 
     print('backward_W:',back[0])
     print('backward_b:',back[1])
+    print('backward_X:',back[2])

@@ -19,8 +19,9 @@ class LostFunction(object):
     @staticmethod
     def cross_entropy(AL,Y):
         m = Y.shape[0]
-        cost = (-1 / m) * np.sum(np.multiply(Y, np.log(AL)) + np.multiply(1 - Y, np.log(1 - AL)))
-        return np.squeeze(cost)
+        cost_mean = (1 / m) * np.sum(np.multiply(Y, np.log(AL)) + np.multiply(1 - Y, np.log(1 - AL)))
+        cost = np.multiply(Y, np.log(AL)) + np.multiply(1 - Y, np.log(1 - AL))
+        return cost, cost_mean
     @staticmethod
     def cross_entropy_derivative(AL, Y):
         """
@@ -30,8 +31,8 @@ class LostFunction(object):
         :param y_label:
         :return:
         """
-        pass
-        return Y * 1./AL + (Y - 1) * (1 - AL)
+        # return Y * 1./AL + (Y - 1) * (1 - AL)
+        return Y * np.divide(1.,AL) + (Y - 1) * (1 - AL)
 
 if __name__ == '__main__':
     np.random.seed(10)
