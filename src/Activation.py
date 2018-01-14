@@ -40,8 +40,8 @@ class Activation(BasicNN):
         self.data_forward = self.func(z)
         return self.data_forward
 
-    def backward(self, dZ, pre_W):
-        return super(Activation, self).backward(dZ, pre_W, func=self.der)
+    def backward(self, dZ):
+        return super(Activation, self).backward(dZ, func=self.der)
 
 if __name__ == '__main__':
     pass
@@ -52,8 +52,7 @@ if __name__ == '__main__':
     print('input_data:',input_data)
     print('forward=', activation.forward(input_data))
     dZ = np.random.rand(2, 3)
-    pre_W = np.random.rand(3, 1)
-    back = activation.backward(dZ, pre_W)
+    back = activation.backward(dZ)
 
     print('backward_W:', back[0])
     print('backward_b:', back[1])
