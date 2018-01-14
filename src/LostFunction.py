@@ -19,9 +19,12 @@ class LostFunction(object):
     @staticmethod
     def cross_entropy(AL, Y):
         m = Y.shape[0]
-        cost = np.multiply(Y, np.log(AL)) + np.multiply(1 - Y, np.log(1 - AL))
-        cost_mean = (-1 / m) * np.sum(cost)
-        return cost, cost_mean
+        try:
+            cost = np.multiply(Y, np.log(AL)) + np.multiply(1 - Y, np.log(1 - AL))
+            cost_mean = (-1 / m) * np.sum(cost)
+            return cost, cost_mean
+        except FloatingPointError as e:
+            print(Y,AL)
     @staticmethod
     def cross_entropy_derivative(AL, Y):
         """
@@ -36,7 +39,7 @@ class LostFunction(object):
 
 if __name__ == '__main__':
     np.random.seed(10)
-    AL = np.random.rand(2,4)
-    Y = np.random.rand(2,4)
+    AL = np.random.randn(2,4)
+    Y = np.random.randn(2,4)
     print(LostFunction.cross_entropy(AL,Y))
     print(LostFunction.cross_entropy_derivative(AL,Y))

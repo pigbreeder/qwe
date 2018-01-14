@@ -5,6 +5,7 @@ from src.BasicNN import BasicNN
 
 class Activation(BasicNN):
     def __init__(self, method='ReLU'):
+        self.name = 'Activation'
         if method == 'sigmoid':
             self.func = self.sigmoid
             self.der = self.sigmoid_derivative
@@ -15,7 +16,7 @@ class Activation(BasicNN):
     def set_input_size(self,input_size):
         self.node_size = input_size
         self.input_size = input_size
-        self.W = np.ones((input_size, input_size))
+        self.W = np.eye(input_size)
         self.b = np.zeros((1, input_size))
 
     def ReLU(self, z):
@@ -48,10 +49,10 @@ if __name__ == '__main__':
     activation = Activation()
     activation.set_input_size(3)
     np.random.seed(10)
-    input_data = np.random.rand(2, 3)
+    input_data = np.random.randn(2, 3)
     print('input_data:',input_data)
     print('forward=', activation.forward(input_data))
-    dZ = np.random.rand(2, 3)
+    dZ = np.random.randn(2, 3)
     back = activation.backward(dZ)
 
     print('backward_W:', back[0])

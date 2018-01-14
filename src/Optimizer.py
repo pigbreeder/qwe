@@ -3,7 +3,7 @@ class Optimizer(object):
     pass
 
     @staticmethod
-    def BGD(x_train, y_train, NN, epoch_num=100, learning_rate=0.001, batch_size=32, eps=1e-8):
+    def BGD(x_train, y_train, NN, epoch_num=100, learning_rate=0.001, batch_size=32, eps=1e-4):
         pass
         theta = 0
         sample_size = x_train.shape[0]

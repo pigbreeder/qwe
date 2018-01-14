@@ -2,18 +2,19 @@ import numpy as np
 
 
 def default_func(A):
-    return np.ones(A.shape)
+    return 1
 class BasicNN(object):
     """ Basic Neural Network
 
     """
     def __init__(self,node_size,input_size=0,init_parameter='random'):
+        self.name = 'BasicNN'
         self.node_size = node_size
         self.input_size = input_size
-        self.W = np.random.rand(input_size, node_size) * 0.01
+        self.W = np.random.randn(input_size, node_size) * 0.01
         self.b = np.zeros((1,node_size))
     def set_input_size(self,input_size):
-        self.W = np.random.rand(input_size, self.node_size) * 0.01
+        self.W = np.random.randn(input_size, self.node_size) * 0.01
         self.input_size = input_size
     def forward(self, input_data):
 
@@ -23,6 +24,7 @@ class BasicNN(object):
 
     def backward(self, dZ, func=default_func):
         m = dZ.shape[0]
+        dZ *= func(self.pre_data)
         grad_W = np.dot(self.pre_data.T, dZ) / m
         grad_b = np.sum(dZ, axis=0, keepdims=True) / m
         # print('db_shape', self.b,np.sum(dZ, axis=0) / m)
@@ -62,13 +64,13 @@ class BasicNN(object):
 if __name__ == '__main__':
     nn = BasicNN(3,4)
     np.random.seed(10)
-    input_data = np.random.rand(2,4)
+    input_data = np.random.randn(2,4)
     print('input:',input_data)
     print('param:',nn.W,nn.b)
     print('forward=',nn.forward(input_data))
 
-    dZ = np.random.rand(2,3)
-    pre_W = np.random.rand(3,1)
+    dZ = np.random.randn(2,3)
+    pre_W = np.random.randn(3,1)
     print('dZ:',dZ)
     print('pre_W:',pre_W)
     back =nn.backward(dZ)

@@ -43,13 +43,17 @@ class Sequential(object):
         dA = self.loss_der(self.layers[-1].data_forward, y_train)
         layer_len = len(self.layers)
 
-        for idx in range(layer_len-2,-1,-1):
+        for idx in range(layer_len-1,-1,-1):
             cur_layer = self.layers[idx]
             grad_W, grad_b, dA = cur_layer.backward(dA)
             # print(idx, 'cur_layer_W:',cur_layer.W)
             # print(idx, 'cur_layer_b:',cur_layer.b)
-            cur_layer.W = cur_layer.W - learning_rate * grad_W
-            cur_layer.b = cur_layer.b - learning_rate * grad_b
+            if cur_layer.name == 'BasicNN':
+                # print(grad_W, grad_b)
+                # print('===')
+                # print(cur_layer.W,cur_layer.b)
+                cur_layer.W = cur_layer.W - learning_rate * grad_W
+                cur_layer.b = cur_layer.b - learning_rate * grad_b
 
 if __name__ == '__main__':
 
@@ -59,8 +63,8 @@ if __name__ == '__main__':
     TEST_THRESHOLD = 0.98
     seq = Sequential([BasicNN(4,input_size=TEST_DIM), Activation(), BasicNN(1,1), Activation('sigmoid')])
     seq.compile()
-    np.random.seed(10)
-    x_train = np.random.rand(100,TEST_DIM)
+    np.random.seed(1)
+    x_train = np.random.randn(100,TEST_DIM)
     y_train = np.zeros((x_train.shape[0],1))
     y_train[(x_train[:, 0] < 0.5) & (x_train[:, 1] < 0.5)] = 1
 
@@ -77,9 +81,21 @@ if __name__ == '__main__':
     # backward = seq.backward(output,0.2)
     # print('backward:',backward)
     #
-    seq.fit(x_train[:TEST_DATA_TRAIN], y_train[:TEST_DATA_TRAIN],10,0.1)
+    np.seterr(all='warn', divide='raise',invalid='raise',under='raise')
+    seq.fit(x_train[:TEST_DATA_TRAIN], y_train[:TEST_DATA_TRAIN],1000,0.1)
+    # idx=0
+    # for layer in seq.layers:
+    #     print ('in ',idx)
+    #     print('W',layer.W)
+    #     print('b',layer.b)
+    #     idx += 1
     output = seq.predict(x_train[:10])
-    print(y_train[:10],output)
+    print(y_train[:10])
+    print(output)
+    output[output > 0.5] = 1
+    output[output < 0.5] = 0
+
+    print(output)
     # print(seq.predict(x_train[TEST_DATA_TRAIN:]))
     # print(seq.predict(x_train[TEST_DATA_TRAIN:]) > TEST_THRESHOLD)
     # print(y_train[TEST_DATA_TRAIN:])
