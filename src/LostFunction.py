@@ -22,7 +22,7 @@ class LostFunction(object):
         try:
             cost = np.multiply(Y, np.log(AL)) + np.multiply(1 - Y, np.log(1 - AL))
             cost_mean = (-1 / m) * np.sum(cost)
-            return cost, cost_mean
+            return cost_mean
         except FloatingPointError as e:
             print(Y,AL)
             raise e

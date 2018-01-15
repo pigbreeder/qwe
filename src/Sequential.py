@@ -19,9 +19,9 @@ class Sequential(object):
             layer.set_input_size(last_layer.node_size)
         self.layers.append(layer)
 
-    def compile(self, loss='cross_entropy', optimizer='sgd'):
-        self.loss = LostFunction.cross_entropy
-        self.loss_der = LostFunction.cross_entropy_derivative
+    def compile(self, loss='linear', optimizer='sgd'):
+        self.loss = LostFunction.linear
+        self.loss_der = LostFunction.linear_derivative
         self.optimizer = Optimizer.BGD
 
     def calc_lost(self, x_train, y_label):
@@ -81,8 +81,9 @@ if __name__ == '__main__':
     # print('backward:',backward)
 
     # 单纯的梯度下降不行，会在计算activation时接近1溢出，需要加入regulations来避免，所以这里的迭代次数不能太多
+    # 使用mse作为目标函数效果好
     np.seterr(all='warn', divide='raise',invalid='raise',under='raise')
-    seq.fit(x_train[:TEST_DATA_TRAIN], y_train[:TEST_DATA_TRAIN],1000,0.01)
+    seq.fit(x_train[:TEST_DATA_TRAIN], y_train[:TEST_DATA_TRAIN],10000,0.1)
     # idx=0
     # for layer in seq.layers:
     #     print ('in ',idx)

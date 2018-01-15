@@ -18,5 +18,5 @@ class Optimizer(object):
                 NN.forward(x_train_data)
                 NN.backward(y_train_data, learning_rate) # careful
             if epoch % 100 == 0:
-                lost, lost_mean = NN.calc_lost(x_train, y_train)
+                lost_mean = NN.calc_lost(x_train, y_train)
                 print('epoch:%d, loss:%.5f' % (epoch, lost_mean))
