@@ -25,6 +25,7 @@ class LostFunction(object):
             return cost, cost_mean
         except FloatingPointError as e:
             print(Y,AL)
+            raise e
     @staticmethod
     def cross_entropy_derivative(AL, Y):
         """
@@ -39,7 +40,8 @@ class LostFunction(object):
 
 if __name__ == '__main__':
     np.random.seed(10)
-    AL = np.random.randn(2,4)
-    Y = np.random.randn(2,4)
+    AL = np.array([[.8,.9,0.4]]).T
+    Y = np.asarray([[1, 1, 1]]).T
+    print(Y.shape)
     print(LostFunction.cross_entropy(AL,Y))
     print(LostFunction.cross_entropy_derivative(AL,Y))

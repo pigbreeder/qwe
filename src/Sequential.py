@@ -24,8 +24,8 @@ class Sequential(object):
         self.loss_der = LostFunction.cross_entropy_derivative
         self.optimizer = Optimizer.BGD
 
-    def calc_lost(self, y_label):
-        return self.loss(self.layers[-1].data_forward, y_label)
+    def calc_lost(self, x_train, y_label):
+        return self.loss(self.predict(x_train), y_label)
 
     def fit(self,x_train, y_train, epochs=10, learning_rate=0.01, batch_size=32):
         self.optimizer(x_train,y_train,self,epochs,learning_rate,batch_size)
@@ -39,7 +39,6 @@ class Sequential(object):
             input_data = layer.forward(input_data)
         return input_data
     def backward(self,y_train, learning_rate):
-        m = y_train.shape[0]
         dA = self.loss_der(self.layers[-1].data_forward, y_train)
         layer_len = len(self.layers)
 
@@ -59,12 +58,12 @@ if __name__ == '__main__':
 
     TEST_DIM = 2
     TEST_DATA_SIZE = 1000
-    TEST_DATA_TRAIN = int(TEST_DATA_SIZE * 0.8)
+    TEST_DATA_TRAIN = int(TEST_DATA_SIZE * 0.98)
     TEST_THRESHOLD = 0.98
-    seq = Sequential([BasicNN(4,input_size=TEST_DIM), Activation(), BasicNN(1,1), Activation('sigmoid')])
+    seq = Sequential([BasicNN(2,input_size=TEST_DIM), Activation(), BasicNN(1,1), Activation('sigmoid')])
     seq.compile()
     np.random.seed(1)
-    x_train = np.random.randn(100,TEST_DIM)
+    x_train = np.random.randn(TEST_DATA_SIZE,TEST_DIM)
     y_train = np.zeros((x_train.shape[0],1))
     y_train[(x_train[:, 0] < 0.5) & (x_train[:, 1] < 0.5)] = 1
 
@@ -80,17 +79,18 @@ if __name__ == '__main__':
     # print('forward:',output)   # forward success
     # backward = seq.backward(output,0.2)
     # print('backward:',backward)
-    #
+
+    # 单纯的梯度下降不行，会在计算activation时接近1溢出，需要加入regulations来避免，所以这里的迭代次数不能太多
     np.seterr(all='warn', divide='raise',invalid='raise',under='raise')
-    seq.fit(x_train[:TEST_DATA_TRAIN], y_train[:TEST_DATA_TRAIN],1000,0.1)
+    seq.fit(x_train[:TEST_DATA_TRAIN], y_train[:TEST_DATA_TRAIN],1000,0.01)
     # idx=0
     # for layer in seq.layers:
     #     print ('in ',idx)
     #     print('W',layer.W)
     #     print('b',layer.b)
     #     idx += 1
-    output = seq.predict(x_train[:10])
-    print(y_train[:10])
+    output = seq.predict(x_train[TEST_DATA_TRAIN:])
+    print(y_train[TEST_DATA_TRAIN:])
     print(output)
     output[output > 0.5] = 1
     output[output < 0.5] = 0
