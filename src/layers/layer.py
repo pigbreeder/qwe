@@ -3,9 +3,10 @@ import numpy as np
 class Layer(object):
     __metaclass__ = ABCMeta
 
-    def __init__(self, output_size, input_size=0, name=''):
+    def __init__(self, node_size, input_size=0, name=''):
         self.input_size = input_size
-        self.output_size = output_size
+        self.output_size = node_size
+        self.node_size = node_size
         self.name = name
         self.W = None
         self.b = None

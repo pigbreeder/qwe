@@ -19,8 +19,9 @@ class BasicUnit():
     def backward(X, dA, W):
         # return dAA, dW, db
         dAA = np.dot(dA, W.T)
-        dW = np.dot(X.T, dA)
-        return dAA, dW, dA
+        dW = np.divide(np.dot(X.T, dA), X.shape[0])
+        db = np.divide(np.sum(dA, axis=0), X.shape[0])
+        return dAA, dW, db
 
 class Unit(object):
     @staticmethod

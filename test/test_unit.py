@@ -35,7 +35,7 @@ def test_SoftmaxUnit():
     dA = np.random.randn(2,2)
     print('X:',X,'\ndA:',dA)
     print('SoftmaxUnit.forward==>\n', SoftmaxUnit.forward(X))
-    print('SoftmaxUnit.backward==>\n', SoftmaxUnit.backward(dA))
+    print('SoftmaxUnit.backward==>\n', SoftmaxUnit.backward(X, dA))
 
 if __name__ == '__main__':
     test_BasicUnit()

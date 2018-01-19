@@ -6,7 +6,7 @@ import numpy as np
 class Convolution2D(Layer):
     # input_size:tuple or list include height,width,channel
     def __init__(self, filters, kernel_size, input_size=0, name='', pad=0, stride=1):
-        super().__init__(input_size, kernel_size +(filters, ), name)
+        super().__init__(kernel_size +(filters, ), input_size, name)
         self.pad = pad
         self.filters = filters
         self.stride = stride

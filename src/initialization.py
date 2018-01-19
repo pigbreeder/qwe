@@ -1,5 +1,7 @@
 import numpy as np
 
+def randn(shape, scale=0.01):
+    return np.random.randn(*shape) * scale
 
 def zeros(shape, dtype=np.double):
     return np.zeros(shape, dtype)
@@ -27,6 +29,7 @@ def glorot_normal(shape):
 
 
 _dict = {'zeros': zeros,
+         'randn': randn,
          'uniform': uniform,
          'normal': normal,
          'glorot_normal': glorot_normal,
