@@ -1,7 +1,7 @@
 import numpy as np
 
 def randn(shape, scale=0.01):
-    return np.random.randn(*shape) * scale
+    return np.random.randn(*shape) / np.sqrt(shape[0])
 
 def zeros(shape, dtype=np.double):
     return np.zeros(shape, dtype)

@@ -21,6 +21,8 @@ class BasicUnit():
         dAA = np.dot(dA, W.T)
         dW = np.divide(np.dot(X.T, dA), X.shape[0])
         db = np.divide(np.sum(dA, axis=0), X.shape[0])
+        dW = np.dot(X.T, dA)
+        db = np.sum(dA, axis=0)
         return dAA, dW, db
 
 class Unit(object):
@@ -51,6 +53,17 @@ class ReLUUnit(Unit):
         dZ[X <= 0] = 0
         return dZ * dA
 
+class TanhUnit(Unit):
+    @staticmethod
+    def forward(X):
+       return np.tanh(X)
+
+    @staticmethod
+    def backward(X, dA):
+        pass
+        X = TanhUnit.forward(X)
+        return (1 - np.square(X)) * dA
+
 class SoftmaxUnit(Unit):
     @staticmethod
     def forward(X):
@@ -60,7 +73,8 @@ class SoftmaxUnit(Unit):
         return dA
 
 _dict = {'sigmoid': SigmoidUnit,
-         'ReLU': ReLUUnit,
+         'relu': ReLUUnit,
+         'tanh': TanhUnit,
          'softmax': SoftmaxUnit,
          }
 

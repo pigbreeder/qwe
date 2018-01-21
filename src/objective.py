@@ -36,19 +36,25 @@ class CategoricalCrossEntropy(Objective):
 
     @staticmethod
     def predict(X):
-        Y_pred_exp = np.exp(X)
+        # print()
+        # amin, amax = X.min(), X.max()
+        # X = (X - amin) / (amax - amin)
+        # 避免爆炸
+        Y_pred_exp = np.exp(X - np.max(X, axis=1, keepdims=True))
         return np.divide(Y_pred_exp, np.sum(Y_pred_exp, axis=1, keepdims=True))
 
     @staticmethod
     def loss(Y_pred, Y_label):
-        Y_pred_source = CategoricalCrossEntropy.predict(Y_pred)
+        # Y_pred_source = CategoricalCrossEntropy.predict(Y_pred)
+        Y_pred_source = np.copy(Y_pred)
         return np.mean(-np.log(Y_pred_source[range(Y_pred.shape[0]), Y_label]))
 
 
     @staticmethod
     def diff(Y_pred, Y_label):
         # return ans.shape = (1, category_size)
-        Y_pred_source = CategoricalCrossEntropy.predict(Y_pred)
+        # Y_pred_source = CategoricalCrossEntropy.predict(Y_pred)
+        Y_pred_source = np.copy(Y_pred)
         Y_pred_source[range(Y_pred.shape[0]), Y_label] -= 1
         # return np.mean(Y_pred_source, axis=0)
         return Y_pred_source

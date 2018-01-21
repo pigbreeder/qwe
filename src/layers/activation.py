@@ -19,5 +19,4 @@ class Activation(Layer):
     def backward(self, X, dA):
         return self.activation.backward(X, dA), None, None
 if __name__ == '__main__':
-    a =Activation(3,'sigmoid')
-    src.unit.SoftmaxUnit.forward(1)
+    a =Activation('sigmoid', 3)
