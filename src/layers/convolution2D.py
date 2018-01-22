@@ -15,16 +15,25 @@ class Convolution2D(Layer):
     def build(self, loc_idx, input_size, init_param_method):
         pass
         super().build(loc_idx, input_size, init_param_method)
-        self.W = src.initialization.get(init_param_method)(self.input_size, self.output_size)
-        self.b = np.zeros(1, self.output_size)
-        self.W = self.kernel_size + self.input_size[2] + self.filters
+
+        self.W = self.kernel_size + (self.input_size[2], self.filters)
         self.b = np.zeros((1, 1, self.input_size[2], self.filters))
+        self.W = src.initialization.get(init_param_method)((*self.kernel_size,self.input_size[2], self.filters))
+
+        n_H_prev, n_W_prev, n_C_prev = self.input_size
+        (f, f, n_C_prev, n_C) = self.W.shape
+        n_H = int((n_H_prev - f + 2 * self.pad) / self.stride) + 1
+        n_W = int((n_W_prev - f + 2 * self.pad) / self.stride) + 1
+        self.output_size = (n_H, n_W, n_C)
+        # self.b = np.zeros(1, self.output_size)
 
     def forward(self, X):
         m, n_H_prev, n_W_prev, n_C_prev = X.shape
         (f, f, n_C_prev, n_C) = self.W.shape
         n_H = int((n_H_prev - f + 2 * self.pad) / self.stride) + 1
         n_W = int((n_W_prev - f + 2 * self.pad) / self.stride) + 1
+        n_H, n_W, n_C = self.output_size
+
         Z = np.zeros((m, n_H, n_W, n_C))
         X_pad = self.zero_pad(X, self.pad)
         for i in range(m):
@@ -65,7 +74,10 @@ class Convolution2D(Layer):
                         dA_prev_pad[i, vert_start:vert_end, horiz_start:horiz_end, :] += self.W[...,c] * dA[i,h,w,c]
                         dW[...,c] += a_slice * dA[i,h,w,c]
                         db[...,c] += dA[i,h,w,c]
-            dA_prev[i,...] = dA_prev_pad[i, self.pad:-self.pad, self.pad:-self.pad, :]
+            if self.pad > 0:
+                dA_prev[i,...] = dA_prev_pad[i, self.pad:-self.pad, self.pad:-self.pad, :]
+            else:
+                dA_prev[i,...] = dA_prev_pad[i,...]
         return dA_prev, dW, db
 
 
@@ -84,7 +96,8 @@ class Convolution2D(Layer):
 
 if __name__ == '__main__':
     pass
-    con = Convolution2D(8,(4,4,3), pad=2)
+    con = Convolution2D(8,(2,2), pad=2)
+    con.build(1,(4,4,3),'randn')
     np.random.seed(1)
     A_prev = np.random.randn(10, 4, 4, 3)
     W = np.random.randn(2, 2, 3, 8)
@@ -96,7 +109,8 @@ if __name__ == '__main__':
     print(np.mean(ret))
     np.random.seed(1)
     dA, dW, db = con.backward(A_prev, ret)
-    print(ret)
+    # print(ret)
     print("dA_mean =", np.mean(dA),dA.shape)
     print("dW_mean =", np.mean(dW),dW.shape)
     print("db_mean =", np.mean(db),db.shape)
+    print(dW)

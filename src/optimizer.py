@@ -10,7 +10,7 @@ class Optimizer(object):
         pass
         self.model = model
 
-    def set_param(self, n_epoch=1000, learning_rate=0.01, batch_size=64, reg_lambda=0.01, switch_print=True, iter_times_print=100):
+    def set_param(self, n_epoch=1000, learning_rate=0.01, batch_size=64, reg_lambda=0.01, switch_print=True, iter_times_print=1):
         self.learning_rate = learning_rate
         self.iterations = 0
         self.batch_size = batch_size

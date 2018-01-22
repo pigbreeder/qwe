@@ -4,20 +4,28 @@ from src.layers.layer import Layer
 
 
 class Pool(Layer):
-    def __init__(self,  kernel_size, input_size, stride=1, mode='max', name=''):
+    def __init__(self,  kernel_size, input_size=0, stride=1, mode='max', name=''):
         self.stride = stride
         self.kernel_size = kernel_size
         self.mode = mode
+        # n_H_prev, n_W_prev, n_C_prev = input_size
+        # f, f = kernel_size
+        # n_H = int(1 + (n_H_prev - f) / self.stride)
+        # n_W = int(1 + (n_W_prev - f) / self.stride)
+        # super().__init__((n_H, n_W, n_C_prev), input_size, name)
+        super().__init__(0, input_size, name)
+    def build(self, loc_idx, input_size, init_param_method):
+        super().build(loc_idx, input_size, init_param_method)
         n_H_prev ,n_W_prev, n_C_prev = input_size
-        f = kernel_size
+        f, f = self.kernel_size
         n_H = int(1 + (n_H_prev - f) / self.stride)
         n_W = int(1 + (n_W_prev - f) / self.stride)
-        super().__init__((n_H, n_W, n_C_prev), input_size, name)
+        self.output_size = self.node_size = (n_H, n_W, n_C_prev)
 
 
     def forward(self, X):
         m, n_H_prev, n_W_prev, n_C_prev = X.shape
-        f = self.kernel_size
+        f, f = self.kernel_size
         n_H = int(1 + (n_H_prev - f) / self.stride)
         n_W = int(1 + (n_W_prev - f) / self.stride)
         n_C = n_C_prev
@@ -42,17 +50,17 @@ class Pool(Layer):
         return A
 
     def backward(self, X, dA):
-        m, n_H, n_W, n_C = X.shape
+        m, n_H, n_W, n_C = dA.shape
         dims = (m,) + self.input_size
         dA_prev = np.zeros(dims)
-        f = self.kernel_size
+        f, f = self.kernel_size
         for i in range(m):
             for h in range(n_H):
                 for w in range(n_W):
                     for c in range(n_C):
-                        vert_start = h
+                        vert_start = h * self.stride
                         vert_end = vert_start + f
-                        horiz_start = w
+                        horiz_start = w * self.stride
                         horiz_end = horiz_start + f
 
                         # to mask window of max
@@ -62,33 +70,36 @@ class Pool(Layer):
                             dA_prev[i, vert_start:vert_end, horiz_start:horiz_end, c] += np.multiply(mask, dA[i,h,w,c])
                         elif self.mode == 'average':
                             dA_prev[i, vert_start:vert_end, horiz_start:horiz_end, c] += np.divide(dA[i,h,w,c], f*f)
-        return dA_prev
+        return dA_prev, None, None
 
 if __name__ == '__main__':
 
-    # np.random.seed(1)
+
     # input_size = (4,4,3)
-    # A_prev = np.random.rand(*((2,) + input_size) )
-    # pool = Pool(4,input_size)
+    # np.random.seed(1)
+    # A_prev = np.random.randn(2, *(input_size) )
+    # pool = Pool((4,4),input_size)
     # print(pool.forward(A_prev))
     # pool.mode='average'
     # print(pool.forward(A_prev))
 
-    np.random.seed(1)
-    input_size = (5, 3, 2)
-    A_prev = np.random.randn(5, 5, 3, 2)
-    pool = Pool(2, (5, 3, 2))
-    pool.forward(A_prev)
-    dA = np.random.randn(5,4,2,2)
-    A_prev = pool.forward(dA)
-    dA = np.random.randn(5, 4, 2, 2)
 
+    input_size = (5, 3, 2)
+    np.random.seed(1)
+    A_prev = np.random.randn(5, 5, 3, 2)
+    dA = np.random.randn(5, 4, 2, 2)
+    print(dA[0,0])
+    pool = Pool((2,2))
+    pool.build(0,(5, 3, 2),'random')
+    A = pool.forward(A_prev)
+    # print(A)
     dA_prev = pool.backward(A_prev, dA)
     print("mode = max")
-    print('mean of dA = ', np.mean(dA))
+    print('mean of dA = ', np.mean(dA_prev))
+
 
     pool.mode = 'average'
     dA_prev = pool.backward(A_prev, dA)
     print("mode = average")
-    print('mean of dA = ', np.mean(dA))
+    print('mean of dA = ', np.mean(dA_prev))
     print(dA_prev[1,1])
