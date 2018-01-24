@@ -1,3 +1,4 @@
+# encoding: utf-8
 import numpy as np
 """
 计算损失函数要得到均值

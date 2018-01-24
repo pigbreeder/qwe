@@ -1,3 +1,4 @@
+# encoding: utf-8
 import numpy as np
 
 def randn(shape, scale=0.01):

@@ -1,7 +1,7 @@
 import  numpy as np
 
 from src.layers.layer import Layer
-
+import numba as nb
 
 class Pool(Layer):
     def __init__(self,  kernel_size, input_size=0, stride=1, mode='max', name=''):
@@ -24,6 +24,8 @@ class Pool(Layer):
 
 
     def forward(self, X):
+        return speed_forward(X,self.kernel_size,self.stride,self.mode)
+
         m, n_H_prev, n_W_prev, n_C_prev = X.shape
         f, f = self.kernel_size
         n_H = int(1 + (n_H_prev - f) / self.stride)
@@ -50,6 +52,8 @@ class Pool(Layer):
         return A
 
     def backward(self, X, dA):
+        return speed_backward(X,dA,self.input_size,self.kernel_size,self.stride,self.mode)
+
         m, n_H, n_W, n_C = dA.shape
         dims = (m,) + self.input_size
         dA_prev = np.zeros(dims)
@@ -71,7 +75,62 @@ class Pool(Layer):
                         elif self.mode == 'average':
                             dA_prev[i, vert_start:vert_end, horiz_start:horiz_end, c] += np.divide(dA[i,h,w,c], f*f)
         return dA_prev, None, None
+@nb.jit
+def speed_forward(X, kernel_size, stride, mode):
+    m, n_H_prev, n_W_prev, n_C_prev = X.shape
+    f, f = kernel_size
+    n_H = int(1 + (n_H_prev - f) / stride)
+    n_W = int(1 + (n_W_prev - f) / stride)
+    n_C = n_C_prev
+    A = np.zeros((m, n_H, n_W, n_C))
+    for i in range(m):
+        # loop window square
+        for h in range(n_H):
+            for w in range(n_W):
+                for c in range(n_C):
+                    # select window location
+                    vert_start = h * stride
+                    vert_end = vert_start + f
+                    horiz_start = w * stride
+                    horiz_end = horiz_start + f
 
+                    a_prev_slice = X[i, vert_start:vert_end, horiz_start:horiz_end, c]
+
+                    if mode == "max":
+                        A[i, h, w, c] = np.max(a_prev_slice)
+                    elif mode == "average":
+                        A[i, h, w, c] = np.mean(a_prev_slice)
+    return A
+@nb.jit
+def speed_backward(X, dA, input_size, kernel_size,stride, mode):
+    m, n_H, n_W, n_C = dA.shape
+    dims = (m,) + input_size
+    dA_prev = np.zeros(dims)
+    f, f = kernel_size
+    for i in range(m):
+        for h in range(n_H):
+            for w in range(n_W):
+                for c in range(n_C):
+                    vert_start = h * stride
+                    vert_end = vert_start + f
+                    horiz_start = w * stride
+                    horiz_end = horiz_start + f
+
+                    # to mask window of max
+                    if mode == 'max':
+                        mask = X[i,vert_start:vert_end,horiz_start:horiz_end,c] == np.max(X[i,vert_start:vert_end,horiz_start:horiz_end,c])
+                        a_prev_slice = X[i, vert_start:vert_end, horiz_start:horiz_end, c]
+                        dA_prev[i, vert_start:vert_end, horiz_start:horiz_end, c] += np.multiply(mask, dA[i,h,w,c])
+                    elif mode == 'average':
+                        dA_prev[i, vert_start:vert_end, horiz_start:horiz_end, c] += np.divide(dA[i,h,w,c], f*f)
+    return dA_prev, None, None
+@nb.jit(nopython=True)
+def numba_str(txt, sample):
+    x=0
+    for i in range(txt.size):
+        if txt[i]==sample:
+            x += 1
+    return x
 if __name__ == '__main__':
 
 
@@ -93,13 +152,13 @@ if __name__ == '__main__':
     pool.build(0,(5, 3, 2),'random')
     A = pool.forward(A_prev)
     # print(A)
-    dA_prev = pool.backward(A_prev, dA)
+    dA_prev,_,_ = pool.backward(A_prev, dA)
     print("mode = max")
     print('mean of dA = ', np.mean(dA_prev))
 
 
     pool.mode = 'average'
-    dA_prev = pool.backward(A_prev, dA)
+    dA_prev,_,_ = pool.backward(A_prev, dA)
     print("mode = average")
     print('mean of dA = ', np.mean(dA_prev))
     print(dA_prev[1,1])

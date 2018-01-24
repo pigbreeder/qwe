@@ -22,7 +22,7 @@ class Sequential(Container):
                 raise Exception('must define input data size')
         self.layers.append(layer)
 
-    def compile(self, objective, optimizer='bgd', init_param_method='randn'):
+    def compile(self, objective, optimizer='bgd', init_param_method='glorot_normal'):
         self.objective = src.objective.get(objective)
         self.optimizer = src.optimizer.get(optimizer)(self)
         self.init_param_method = init_param_method
