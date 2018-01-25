@@ -1,4 +1,10 @@
 import numpy as np
+from config.Basic import *
+if SWITCH_EXT:
+    from src.ext import *
+else:
+    from .py_util import *
+
 def grad_clicp(grad,th_max=1e6):
     # print('in grad_clicp', grad)
     # t = np.linalg.norm(grad)

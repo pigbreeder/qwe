@@ -3,7 +3,7 @@ import src.optimizer
 import src.objective
 import numpy as np
 import src.util
-
+from config.Basic import *
 class Container(object):
     # print('To check the detail parameter of layer,you can use describe func.')
     pass
@@ -35,8 +35,8 @@ class Sequential(Container):
     def evaluate_loss(self, x_train, y_label):
         return self.objective.loss(self.predict(x_train), y_label)
 
-    def fit(self, x_train, y_train, epochs=1000, learning_rate=0.01, batch_size=100):
-        self.optimizer.set_param(n_epoch=epochs, learning_rate=learning_rate, batch_size=batch_size, reg_lambda=0.01)
+    def fit(self, x_train, y_train, epochs=DEFAULT_EPOCH, learning_rate=DEFAULT_LEARNING_RATE, batch_size=DEFAULT_BATCH_SIZE, reg_lambda=DEFAULE_REG_LAMBDA):
+        self.optimizer.set_param(n_epoch=epochs, learning_rate=learning_rate, batch_size=batch_size, reg_lambda=reg_lambda)
         self.optimizer.iterate(x_train,y_train)
 
     def predict(self, x_test):
@@ -61,14 +61,23 @@ class Sequential(Container):
             dA, grad_W, grad_b = cur_layer.backward(self.input_data[idx], dA)
 
             if grad_W is not None:
-                # cur_layer.W -= grad_W * 0.01
-                # cur_layer.b -= grad_b * 0.01
                 grads.append((grad_W, grad_b))
                 params.append((cur_layer.W, cur_layer.b))
         return params, grads
+    def accuracy(self, x_train,y_label):
+        y_predict = self.predict(x_train)
+        y_predict = np.argmax(y_predict,axis=1)
+        m = y_label.shape[0]
+        predit_true = y_label[y_label == y_predict].size
+        print('predict true accuracy:%s' %(predit_true/m))
     def describe(self):
         for layer in self.layers:
             layer.describe()
+    def intro(self):
+        print("==============================Sequential==============================")
+        for layer in self.layers:
+            layer.intro()
+        print("==============================Sequential==============================")
 
 if __name__ == '__main__':
     pass

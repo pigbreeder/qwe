@@ -1,5 +1,5 @@
 from abc import ABCMeta, abstractmethod
-
+from config import *
 import numpy as np
 
 
@@ -10,7 +10,7 @@ class Optimizer(object):
         pass
         self.model = model
 
-    def set_param(self, n_epoch=1000, learning_rate=0.01, batch_size=64, reg_lambda=0.01, switch_print=True, iter_times_print=1):
+    def set_param(self, n_epoch, learning_rate, batch_size, reg_lambda, switch_print=SWITCH_PRINT_TRAIN_MSG, iter_times_print=DEFAULT_LOSS_PRINT_LOOP):
         self.learning_rate = learning_rate
         self.iterations = 0
         self.batch_size = batch_size
@@ -54,27 +54,29 @@ class BGD(Optimizer):
             #     print('b:',layer.b)
             # print('========================')
             pass
-        for param, grad in zip(params, grads):
-            pw, pb = param
-            gw, gb = grad
+        # for param, grad in zip(params, grads):
+        #     pw, pb = param
+        #     gw, gb = grad
+        #
+        #     gw += self.reg_lambda * pw
+        #     pw -= self.learning_rate * gw
+        #     pb -= self.learning_rate * gb
 
-            gw += self.reg_lambda * pw
-            pw -= self.learning_rate * gw
-            pb -= self.learning_rate * gb
-
-        # if self.iterations == 1:
-        #     self.pre_velocities = [0] * len(params)
-        # params = [param for layer_param in params for param in layer_param]
-        # grads = [grad for layer_grad in grads for grad in layer_grad]
-        # for param, grad, pre_velocity in zip(params, grads, self.pre_velocities):
-        #     now_velocity = - self.cur_lr * grad + pre_velocity * self.momentum
-        #     param += now_velocity
-        #     self.now_velocities.append(now_velocity)
+        if self.iterations == 0:
+            self.pre_velocities = [0] * len(params)
+        params = [param for layer_param in params for param in layer_param]
+        grads = [grad for layer_grad in grads for grad in layer_grad]
+        for param, grad, pre_velocity in zip(params, grads, self.pre_velocities):
+            now_velocity = - self.cur_lr * grad + pre_velocity * self.momentum
+            param += now_velocity
+            self.now_velocities.append(now_velocity)
 
         debug_print()
+        self.preset_iterate()
         return
 
     def preset_iterate(self):
+        self.iterations += 1
         self.cur_lr = self.learning_rate * 1. / (1.0 + self.decay * self.iterations)
         self.pre_velocities = self.now_velocities
         self.now_velocities = []
@@ -84,8 +86,6 @@ class BGD(Optimizer):
         self.cur_lr = self.learning_rate
         sample_size = x_train.shape[0]
         for epoch in range(1, self.n_epoch + 1):
-            self.iterations = epoch
-            self.preset_iterate()
             for i in range(0, sample_size, self.batch_size):
                 j = i + self.batch_size
                 if j > sample_size:
@@ -99,8 +99,20 @@ class BGD(Optimizer):
                 lost_mean = self.model.evaluate_loss(x_train, y_train)
                 print('epoch:%d, loss:%.5f' % (epoch, lost_mean))
 
+class BGD_REG(BGD):
+
+    def update(self, params, grads):
+        for param, grad in zip(params, grads):
+            pw, pb = param
+            gw, gb = grad
+
+            gw += self.reg_lambda * pw
+            pw -= self.learning_rate * gw
+            pb -= self.learning_rate * gb
+
 
 _dict = {'bgd': BGD,
+         'bgd_reg': BGD_REG,
          }
 
 
