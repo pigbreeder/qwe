@@ -1,7 +1,7 @@
 from abc import ABCMeta, abstractmethod
 from config import *
 import numpy as np
-
+import time
 
 class Optimizer(object):
     __metaclass__ = ABCMeta
@@ -83,9 +83,11 @@ class BGD(Optimizer):
 
     def iterate(self, x_train, y_train):
         pass
+        self.st_time = time.time()
         self.cur_lr = self.learning_rate
         sample_size = x_train.shape[0]
         for epoch in range(1, self.n_epoch + 1):
+            st = time.time()
             for i in range(0, sample_size, self.batch_size):
                 j = i + self.batch_size
                 if j > sample_size:
@@ -97,7 +99,8 @@ class BGD(Optimizer):
                 self.update(params, grads)
             if self.switch_print and epoch % self.iter_times_print == 0:
                 lost_mean = self.model.evaluate_loss(x_train, y_train)
-                print('epoch:%d, loss:%.5f' % (epoch, lost_mean))
+                print('epoch:%d, loss:%.5f,cost time:%.2f' % (epoch, lost_mean,time.time()-st))
+        print('finish iterate,cost %.2f time.' % (time.time()-self.st_time))
 
 class BGD_REG(BGD):
 

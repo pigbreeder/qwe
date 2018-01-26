@@ -56,3 +56,49 @@ def col2img(X, output_size, pad, stride, f):
         return Z[:, pad:-pad, pad:-pad, :]
     else:
         return Z
+
+def img2col_HW(X,stride, f):
+    pass
+    m, n_H_prev, n_W_prev, n_C_prev= X.shape
+    n_H = int(1 + (n_H_prev - f) / stride)
+    n_W = int(1 + (n_W_prev - f) / stride)
+
+    Z = np.zeros((m * n_H * n_W * n_C_prev, f * f))
+    row = -1
+
+    for i in range(m):
+        for h in range(n_H):
+            for w in range(n_W):
+                vert_start = h * stride
+                horiz_start = w * stride
+                for c in range(n_C_prev):
+                    row += 1
+                    for col in range(f * f):
+                        hh = col // f
+                        ww = col % f
+                        Z[row, col] = X[i, vert_start + hh, horiz_start + ww, c]
+    return Z
+
+
+def col2img_HW(X, output_size, stride, f):
+    pass
+    n_H_prev, n_W_prev, n_C_prev = output_size
+    n_X_H_prev, n_X_W_prev = X.shape
+    n_H = int(1 + (n_H_prev - f) / stride)
+    n_W = int(1 + (n_W_prev - f) / stride)
+
+    m = n_X_H_prev // (n_H * n_W * n_C_prev)
+    Z = np.zeros((m, n_H_prev, n_W_prev, n_C_prev))
+    row = -1
+    for i in range(m):
+        for h in range(n_H):
+            for w in range(n_W):
+                vert_start = h * stride
+                horiz_start = w * stride
+                for c in range(n_C_prev):
+                    row += 1
+                    for col in range(f * f):
+                        hh = col // f
+                        ww = col % f
+                        Z[i, vert_start + hh, horiz_start + ww, c] += X[row, col]
+    return Z

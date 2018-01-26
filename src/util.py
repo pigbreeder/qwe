@@ -1,5 +1,5 @@
 import numpy as np
-from config.Basic import *
+from config.basic import *
 if SWITCH_EXT:
     from src.ext import *
 else:

@@ -24,15 +24,14 @@ class Convolution2D(Layer):
         self.W = src.initialization.get(init_param_method)((self.input_size[2], *self.kernel_size, self.filters))
         # self.W = src.initialization.get(init_param_method)(self.kernel_size + (self.input_size[2], self.filters))
 
-        n_H_prev, n_W_prev, n_C_prev = self.input_size
-        (f, f, n_C_prev, n_C) = self.W.shape
+        n_H_prev, n_W_prev ,n_C_prev = self.input_size
+        (n_C_prev, f, f, n_C) = self.W.shape
         n_H = int((n_H_prev - f + 2 * self.pad) / self.stride) + 1
         n_W = int((n_W_prev - f + 2 * self.pad) / self.stride) + 1
         self.output_size = (n_H, n_W, n_C)
-        # self.b = np.zeros(1, self.output_size)
 
 
-
+    @nb.jit
     def forward(self, X):
         W = self.W
         b = self.b
@@ -56,6 +55,7 @@ class Convolution2D(Layer):
         Z = BasicUnit.forward(XX, WW, b)
         return Z.reshape(m, n_H, n_W, n_C)
 
+    @nb.jit
     def backward(self, X, dA):
         pass
         return speed_backward(self, X,dA)

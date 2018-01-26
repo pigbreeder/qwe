@@ -34,7 +34,7 @@ class Layer(object):
 
 
     def intro(self):
-        print('%s layer\tname:%s\ttype:%s' % (self.loc_idx, self.name, self.__class__.__name__))
+        print('%s layer\tname:%s\ttype:%s' % (self.loc_idx, self.name, self.__class__.__name__),end='\t')
         print('input_size:%s\toutput_size:%s' % (self.input_size, self.output_size))
 
 

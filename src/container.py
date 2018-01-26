@@ -3,7 +3,7 @@ import src.optimizer
 import src.objective
 import numpy as np
 import src.util
-from config.Basic import *
+from config.basic import *
 class Container(object):
     # print('To check the detail parameter of layer,you can use describe func.')
     pass
@@ -36,9 +36,10 @@ class Sequential(Container):
         return self.objective.loss(self.predict(x_train), y_label)
 
     def fit(self, x_train, y_train, epochs=DEFAULT_EPOCH, learning_rate=DEFAULT_LEARNING_RATE, batch_size=DEFAULT_BATCH_SIZE, reg_lambda=DEFAULE_REG_LAMBDA):
+        print("start fit the trains>>>>>>>>>>>>>>>>>>>>>>>>>>")
         self.optimizer.set_param(n_epoch=epochs, learning_rate=learning_rate, batch_size=batch_size, reg_lambda=reg_lambda)
         self.optimizer.iterate(x_train,y_train)
-
+        print("finish fit the trains>>>>>>>>>>>>>>>>>>>>>>>>>>")
     def predict(self, x_test):
         return self.forward(x_test)
 
