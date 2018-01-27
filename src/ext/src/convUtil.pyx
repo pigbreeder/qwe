@@ -18,7 +18,7 @@ cdef np.ndarray[np.double_t, ndim=2]_img2col(np.ndarray[np.double_t, ndim=4] X, 
     n_H = int((n_H_prev - f + 2 * pad) / stride) + 1
     n_W = int((n_W_prev - f + 2 * pad) / stride) + 1
     Z = np.zeros((m * n_H * n_W, f * f * n_C_prev), dtype=np.float64)
-    # X_pad = np.pad(X, ((0, 0), (pad, pad), (pad, pad), (0, 0)), 'constant', constant_values=0)
+    X_pad = np.pad(X, ((0, 0), (pad, pad), (pad, pad), (0, 0)), 'constant', constant_values=0)
     row = -1
 
     for i in range(m):
@@ -27,13 +27,19 @@ cdef np.ndarray[np.double_t, ndim=2]_img2col(np.ndarray[np.double_t, ndim=4] X, 
                 row += 1
                 vert_start = h * stride
                 horiz_start = w * stride
-                for col in range(f * f * n_C_prev):
-                    t = col // n_C_prev
-                    hh = t // f
-                    ww = t % f
-                    cc = col % n_C_prev
-
-                    # Z[row, col] = X_pad[i, vert_start + hh, horiz_start + ww, cc]
+                col=0
+                for hh in range(f):
+                    for ww in range(f):
+                        for cc in range(n_C_prev):
+                            Z[row, col] = X_pad[i, vert_start + hh, horiz_start + ww, cc]
+                            col += 1
+                # for col in range(f * f * n_C_prev):
+                #     t = col // n_C_prev
+                #     hh = t // f
+                #     ww = t % f
+                #     cc = col % n_C_prev
+                #
+                #     Z[row, col] = X_pad[i, vert_start + hh, horiz_start + ww, cc]
     return Z
 
 
@@ -62,12 +68,18 @@ cdef np.ndarray[np.double_t, ndim=4] _col2img(np.ndarray[np.double_t, ndim=2] X,
                 row += 1
                 vert_start = h * stride
                 horiz_start = w * stride
-                for col in range(f * f * n_C_prev):
-                    t = col // n_C_prev
-                    hh = t // f
-                    ww = t % f
-                    cc = col % n_C_prev
-                    Z[i, vert_start + hh, horiz_start + ww, cc] += X[row, col]
+                col=0
+                for hh in range(f):
+                    for ww in range(f):
+                        for cc in range(n_C_prev):
+                            Z[i, vert_start + hh, horiz_start + ww, cc] += X[row, col]
+                            col += 1
+                # for col in range(f * f * n_C_prev):
+                #     t = col // n_C_prev
+                #     hh = t // f
+                #     ww = t % f
+                #     cc = col % n_C_prev
+                #     Z[i, vert_start + hh, horiz_start + ww, cc] += X[row, col]
     if pad > 0:
         return Z[:, pad:-pad, pad:-pad, :]
     else:
@@ -96,10 +108,15 @@ cdef np.ndarray[np.double_t, ndim=2] _img2col_HW(np.ndarray[np.double_t, ndim=4]
                 horiz_start = w * stride
                 for c in range(n_C_prev):
                     row += 1
-                    for col in range(f * f):
-                        hh = col // f
-                        ww = col % f
-                        Z[row, col] = X[i, vert_start + hh, horiz_start + ww, c]
+                    col = 0
+                    for hh in range(f):
+                        for ww in range(f):
+                            Z[row, col] = X[i, vert_start + hh, horiz_start + ww, c]
+                            col += 1
+                    # for col in range(f * f):
+                    #     hh = col // f
+                    #     ww = col % f
+                    #     Z[row, col] = X[i, vert_start + hh, horiz_start + ww, c]
     return Z
 
 @cython.boundscheck(False)
@@ -126,10 +143,15 @@ cdef np.ndarray[np.double_t, ndim = 4] _col2img_HW(np.ndarray[np.double_t, ndim 
                 horiz_start = w * stride
                 for c in range(n_C_prev):
                     row += 1
-                    for col in range(f * f):
-                        hh = col // f
-                        ww = col % f
-                        Z[i, vert_start + hh, horiz_start + ww, c] += X[row, col]
+                    col=0
+                    for hh in range(f):
+                        for ww in range(f):
+                            Z[i, vert_start + hh, horiz_start + ww, c] += X[row, col]
+                            col += 1
+                    # for col in range(f * f):
+                    #     hh = col // f
+                    #     ww = col % f
+                    #     Z[i, vert_start + hh, horiz_start + ww, c] += X[row, col]
     return Z
 
 def img2col(X, pad, stride, f):
