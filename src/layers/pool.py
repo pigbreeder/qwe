@@ -2,7 +2,7 @@ import  numpy as np
 from src.util import *
 from src.layers.layer import Layer
 import numba as nb
-
+import time
 class Pool(Layer):
     def __init__(self,  kernel_size, input_size=0, stride=1, mode='max', name=''):
         self.stride = stride
@@ -34,7 +34,9 @@ class Pool(Layer):
         n_H = int(1 + (n_H_prev - f) / self.stride)
         n_W = int(1 + (n_W_prev - f) / self.stride)
         n_C = n_C_prev
+        # st = time.time()
         XX = img2col_HW(X, self.stride, f)
+        # print('img2col_HW,cost', (time.time()-st))
         self.XX = XX
         if self.mode == 'max':
             Z = np.max(XX, axis=1)
@@ -108,13 +110,7 @@ def simple_backward(X, dA, input_size, kernel_size,stride, mode):
                     elif mode == 'average':
                         dA_prev[i, vert_start:vert_end, horiz_start:horiz_end, c] += np.divide(dA[i,h,w,c], f*f)
     return dA_prev, None, None
-@nb.jit(nopython=True)
-def numba_str(txt, sample):
-    x=0
-    for i in range(txt.size):
-        if txt[i]==sample:
-            x += 1
-    return x
+
 if __name__ == '__main__':
 
 

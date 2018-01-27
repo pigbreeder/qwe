@@ -10,7 +10,7 @@ def img2col(X, pad, stride, f):
     n_H = int((n_H_prev - f + 2 * pad) / stride) + 1
     n_W = int((n_W_prev - f + 2 * pad) / stride) + 1
     Z = np.zeros((m * n_H * n_W, f * f * n_C_prev))
-    X = np.pad(X, ((0, 0), (pad, pad), (pad, pad), (0, 0)), 'constant', constant_values=0)
+    X_pad = np.pad(X, ((0, 0), (pad, pad), (pad, pad), (0, 0)), 'constant', constant_values=0)
     row = -1
 
     for i in range(m):
@@ -20,11 +20,11 @@ def img2col(X, pad, stride, f):
                 vert_start = h * stride
                 horiz_start = w * stride
                 for col in range(f * f * n_C_prev):
-                    t = col % ff
+                    t = col // n_C_prev
                     hh = t // f
                     ww = t % f
-                    cc = col // ff
-                    Z[row, col] = X[i, vert_start + hh, horiz_start + ww, cc]
+                    cc = col % n_C_prev
+                    Z[row, col] = X_pad[i, vert_start + hh, horiz_start + ww, cc]
     return Z
 
 
@@ -47,10 +47,10 @@ def col2img(X, output_size, pad, stride, f):
                 vert_start = h * stride
                 horiz_start = w * stride
                 for col in range(f * f * n_C_prev):
-                    t = col % ff
+                    t = col // n_C_prev
                     hh = t // f
                     ww = t % f
-                    cc = col // ff
+                    cc = col % n_C_prev
                     Z[i, vert_start + hh, horiz_start + ww, cc] += X[row, col]
     if pad > 0:
         return Z[:, pad:-pad, pad:-pad, :]
