@@ -64,8 +64,10 @@ class BGD(Optimizer):
 
         if self.iterations == 0:
             self.pre_velocities = [0] * len(params)
+        # 将元组类型展开便于计算
         params = [param for layer_param in params for param in layer_param]
         grads = [grad for layer_grad in grads for grad in layer_grad]
+        # 梯度下降速度控制
         for param, grad, pre_velocity in zip(params, grads, self.pre_velocities):
             now_velocity = - self.cur_lr * grad + pre_velocity * self.momentum
             param += now_velocity
@@ -92,6 +94,7 @@ class BGD(Optimizer):
                 j = i + self.batch_size
                 if j > sample_size:
                     j = sample_size
+                # 获取每次样本
                 x_train_data = x_train[i:j]
                 y_train_data = y_train[i:j]
                 y_predict = self.model.forward(x_train_data)
@@ -103,7 +106,7 @@ class BGD(Optimizer):
         print('finish iterate,cost %.2f time.' % (time.time()-self.st_time))
 
 class BGD_REG(BGD):
-
+    # 带有正则约束，减少一定过拟合
     def update(self, params, grads):
         for param, grad in zip(params, grads):
             pw, pb = param
