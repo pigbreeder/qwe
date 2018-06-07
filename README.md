@@ -1,5 +1,10 @@
 # qwe
-    
+[相关文章解析-intro](http://www.cnblogs.com/pigbreeder/p/8375935.html)
+
+[相关文章解析-CNN实现](http://www.cnblogs.com/pigbreeder/p/8376034.html)
+
+---
+
 ## 简介
 简单的深度框架，参考Ng的深度学习课程作业，使用了keras的API设计。
 
